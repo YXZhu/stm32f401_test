@@ -51,7 +51,7 @@
 
 uint8_t aShow[100] = {0};
 uint8_t usbcdcflag = 0;
-//unsigned short key_value;
+unsigned short key_value;
 
 /* USER CODE END PV */
 
@@ -73,10 +73,10 @@ static void RTC_CalendarShow(uint8_t *show);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	uint32_t tick,tick1/*,tick2,tick3*/;
+	uint32_t tick,tick1,tick2,tick3;
+	uint8_t breathsw = 1;
   /* USER CODE END 1 */
   
-
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
@@ -98,25 +98,6 @@ int main(void)
   MX_RTC_Init();
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
-   uint8_t breathsw = 1;
-	
-//  /* Enable Power Control clock */
-//  __HAL_RCC_PWR_CLK_ENABLE();
-//  /* Check if the system was resumed from Standby mode */ 
-//  if (__HAL_PWR_GET_FLAG(PWR_FLAG_SB) != RESET)
-//  {
-//    /* Clear Standby flag */
-//    __HAL_PWR_CLEAR_FLAG(PWR_FLAG_SB); 
-//    /* Blink LED1 to indicate that the system was resumed from Standby mode */
-//    HAL_GPIO_WritePin(C13_GPIO_Port,C13_Pin,GPIO_PIN_RESET);
-//    HAL_Delay(200);
-//    HAL_GPIO_WritePin(C13_GPIO_Port,C13_Pin,GPIO_PIN_SET);
-//    HAL_Delay(200);
-//  }
-//  /* Disable all used wakeup sources: PWR_WAKEUP_PIN1 */
-//  HAL_PWR_DisableWakeUpPin(PWR_WAKEUP_PIN1);
-//  /* Clear all related wakeup flags*/
-//  __HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
   
   /* USER CODE END 2 */
 
@@ -127,6 +108,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+		
 	  /* C13 ºôÎüµÆ²âÊÔ */
 	  /* C13 Breathing Lamp test */
 		static uint8_t pwmset;
@@ -166,8 +148,8 @@ int main(void)
 			}
 	  }
 	  
-	  	/* USB RTC ADC ²âÊÔ */
-	   /* USB RTC ADC Test */
+	  /* USB RTC ADC ²âÊÔ */
+	  /* USB RTC ADC Test */
 	  if(HAL_GetTick() - tick1 >= 1000)
 	  {
 		  tick1 = HAL_GetTick();
@@ -180,46 +162,42 @@ int main(void)
 				RTC_CalendarShow(aShow);
 	  }
 	  
-//	  if(HAL_GetTick() - tick2 >= 1)
-//	  {
-//		  tick2 = HAL_GetTick();
-//		  //HAL_GPIO_TogglePin(C13_GPIO_Port,C13_Pin);
-//		  key_check_all_loop_1ms();
-//	  }
-//	  
-//	  if(HAL_GetTick() - tick3 >= 10)
-//	  {
-//		  tick3 = HAL_GetTick();
-//		  key_value = key_read_value();
-//		  
-//		  if(key_value == KEY0_UP_SHORT)
-//		  {
-//			 breathsw = 1;
-//			 HAL_GPIO_WritePin(C13_GPIO_Port,C13_Pin,GPIO_PIN_SET);
-//			 CDC_Transmit_FS(aShow,sprintf((char *)aShow, "Short Press ¶Ì°´\r\n"));
-//			 HAL_Delay(50);
-//			  
-//			 /* Enable WakeUp Pin PWR_WAKEUP_PIN1 connected to PA.00 */
-//			 HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN1);
-//			 /* Clear all related wakeup flags*/
-//			 __HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
-//			  
-//			 HAL_PWR_EnterSTANDBYMode();
-//			 //HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
-//			 //SystemClock_Config(); 
-//		  }
-//		  else if(key_value == KEY0_UP_DOUBLE)
-//		  {
-//			  breathsw = 0;
-//			  HAL_GPIO_WritePin(C13_GPIO_Port,C13_Pin,GPIO_PIN_RESET);
-//			  CDC_Transmit_FS(aShow,sprintf((char *)aShow, "Double Press Ë«»÷\r\n"));
-//		  }
-//		  else if(key_value == KEY0_LONG)
-//		  {
-//			  breathsw = 1;
-//			  CDC_Transmit_FS(aShow,sprintf((char *)aShow, "Long Press ³¤°´\r\n"));
-//		  }
-//	  }
+		/* key_check_all_loop_1ms */
+	  if(HAL_GetTick() - tick2 >= 1)
+	  {
+		  tick2 = HAL_GetTick();
+		  key_check_all_loop_1ms();
+	  }
+	  
+	  /* Key°´¼ü°´ÏÂ²éÑ¯ */
+	  if(HAL_GetTick() - tick3 >= 10)
+	  {
+		  tick3 = HAL_GetTick();
+		  key_value = key_read_value();
+		  
+		  if(key_value == KEY0_UP_SHORT)
+		  {
+			  breathsw = 0;
+			  HAL_GPIO_WritePin(C13_GPIO_Port,C13_Pin,HAL_GPIO_ReadPin(C13_GPIO_Port,C13_Pin)==GPIO_PIN_SET?GPIO_PIN_RESET:GPIO_PIN_SET);
+				
+			  CDC_Transmit_FS(aShow,sprintf((char *)aShow, "\r\nShort Press ¶Ì°´\r\n"));
+		  }
+		  else if(key_value == KEY0_UP_DOUBLE)
+		  {
+			  breathsw = 0;
+			  HAL_GPIO_WritePin(C13_GPIO_Port,C13_Pin,HAL_GPIO_ReadPin(C13_GPIO_Port,C13_Pin)==GPIO_PIN_SET?GPIO_PIN_RESET:GPIO_PIN_SET);
+			  
+			  CDC_Transmit_FS(aShow,sprintf((char *)aShow, "\r\nDouble Press Ë«»÷\r\n"));
+		  }
+		  else if(key_value == KEY0_LONG)
+		  {
+			  breathsw = 1;
+				pwmset = 0;
+				timecount = 0;
+				
+			  CDC_Transmit_FS(aShow,sprintf((char *)aShow, "\r\nLong Press ³¤°´\r\n"));
+		  }
+	  }	  
   }
   /* USER CODE END 3 */
 }
