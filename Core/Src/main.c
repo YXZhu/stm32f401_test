@@ -53,6 +53,7 @@ uint8_t aShow[100] = {0};
 uint8_t usbcdcflag = 0;
 unsigned short key_value;
 
+extern uint32_t rtc_ResetFlag;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -75,6 +76,7 @@ int main(void)
   /* USER CODE BEGIN 1 */
 	uint32_t tick,tick1,tick2,tick3;
 	uint8_t breathsw = 1;
+	tick = 0;
   /* USER CODE END 1 */
   
   /* MCU Configuration--------------------------------------------------------*/
@@ -96,9 +98,23 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_RTC_Init();
+	
+		/* Turn on LED1: External reset occurred */
+	if(rtc_ResetFlag != 1)	
+	{
+		for(uint8_t i=0;i<10;i++)
+		{
+			 HAL_GPIO_WritePin(C13_GPIO_Port,C13_Pin,GPIO_PIN_RESET);
+			 HAL_Delay(100-1);
+			 HAL_GPIO_WritePin(C13_GPIO_Port,C13_Pin,GPIO_PIN_SET);
+			 HAL_Delay(100-1);
+		}
+		//HAL_Delay(1500-1);
+	}
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
   
+
   /* USER CODE END 2 */
 
   /* Infinite loop */

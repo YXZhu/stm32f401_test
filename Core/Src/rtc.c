@@ -21,7 +21,7 @@
 #include "rtc.h"
 
 /* USER CODE BEGIN 0 */
-
+uint32_t rtc_ResetFlag;
 /* USER CODE END 0 */
 
 RTC_HandleTypeDef hrtc;
@@ -47,7 +47,9 @@ void MX_RTC_Init(void)
   }
 
   /* USER CODE BEGIN Check_RTC_BKUP */
-   if (HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR1) != 0x32F2)
+	rtc_ResetFlag = 0;
+	
+  if (HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR1) != 0x32F2)
   {
     /* Configure RTC Calendar */
 	  HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR1, 0x32F2);
@@ -66,20 +68,21 @@ void MX_RTC_Init(void)
     /* Check if Pin Reset flag is set 按下复位键*/
     if (__HAL_RCC_GET_FLAG(RCC_FLAG_PINRST) != RESET)
     {
-      /* Turn on LED1: External reset occurred */
-		 HAL_GPIO_WritePin(C13_GPIO_Port,C13_Pin,GPIO_PIN_RESET);
-		 HAL_Delay(10-1);
-		 HAL_GPIO_WritePin(C13_GPIO_Port,C13_Pin,GPIO_PIN_SET);
-		 HAL_Delay(100-1);
-		 HAL_GPIO_WritePin(C13_GPIO_Port,C13_Pin,GPIO_PIN_RESET);
-		 HAL_Delay(10-1);
-		 HAL_GPIO_WritePin(C13_GPIO_Port,C13_Pin,GPIO_PIN_SET);
-		 HAL_Delay(500-1);
+				/* Turn on LED1: External reset occurred */
+			 HAL_GPIO_WritePin(C13_GPIO_Port,C13_Pin,GPIO_PIN_RESET);
+			 HAL_Delay(10-1);
+			 HAL_GPIO_WritePin(C13_GPIO_Port,C13_Pin,GPIO_PIN_SET);
+			 HAL_Delay(100-1);
+			 HAL_GPIO_WritePin(C13_GPIO_Port,C13_Pin,GPIO_PIN_RESET);
+			 HAL_Delay(10-1);
+			 HAL_GPIO_WritePin(C13_GPIO_Port,C13_Pin,GPIO_PIN_SET);
+			 HAL_Delay(100-1);
+			 rtc_ResetFlag = 1;
     }
     /* Clear source Reset Flag */
     __HAL_RCC_CLEAR_RESET_FLAGS();
 	 /* return 不执行下面代码 */
-	 return;
+	 return ;
   }   
   /* USER CODE END Check_RTC_BKUP */
 
